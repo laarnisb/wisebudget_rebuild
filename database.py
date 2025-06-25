@@ -1,28 +1,18 @@
-import sqlite3
-from sqlalchemy import create_engine, MetaData
+import os
+import streamlit as st
+from sqlalchemy import create_engine
 
-# SQLite DB path
-DATABASE_URL = "sqlite:///wisebudget.db"
+# Load database credentials from Streamlit secrets or env
+DB_USER = os.getenv("DB_USER") or st.secrets["DB_USER"]
+DB_PASSWORD = os.getenv("DB_PASSWORD") or st.secrets["DB_PASSWORD"]
+DB_HOST = os.getenv("DB_HOST") or st.secrets["DB_HOST"]
+DB_PORT = os.getenv("DB_PORT") or st.secrets["DB_PORT"]
+DB_NAME = os.getenv("DB_NAME") or st.secrets["DB_NAME"]
 
-# SQLAlchemy Engine and Metadata
-engine = create_engine(DATABASE_URL, echo=False)
-metadata = MetaData()
+# Add SSL requirement for Streamlit Cloud
+DATABASE_URL = (
+    f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?sslmode=require"
+)
 
-def create_tables():
-    with engine.connect() as connection:
-        connection.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL
-        );
-        """)
-        connection.execute("""
-        CREATE TABLE IF NOT EXISTS transactions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            category TEXT NOT NULL,
-            amount TEXT NOT NULL,  -- AES encrypted
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-        );
-        """)
+# Create SQLAlchemy engine with pre-ping
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)

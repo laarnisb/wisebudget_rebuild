@@ -1,6 +1,6 @@
 streamlit==1.25.0
 pandas==1.5.3
-numpy==1.23.5
+numpy>=1.26.0
 Cython==0.29.36
 bcrypt==3.2.2
 sqlalchemy==2.0.29
